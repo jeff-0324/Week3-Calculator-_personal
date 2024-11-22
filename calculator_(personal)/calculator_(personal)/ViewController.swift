@@ -19,6 +19,9 @@ class ViewController: UIViewController {
         label.backgroundColor = .black
         label.textAlignment = .right
         label.font = .boldSystemFont(ofSize: 60)
+        label.adjustsFontSizeToFitWidth = true      // 텍스트 크기를 label 너비에 맞게 조정
+        label.minimumScaleFactor = 0.5              // 글자 크기의 최소비율을 0.5까지 조정
+        label.numberOfLines = 1
         return label
     }()
     
@@ -101,8 +104,6 @@ class ViewController: UIViewController {
             for index in stackView {
                 index.snp.makeConstraints {
                     $0.height.equalTo(80)
-                    $0.leading.equalTo(index.snp.leading).offset(20)
-                    $0.trailing.equalTo(index.snp.trailing).offset(-28)
                 }
             }
         }
