@@ -2,8 +2,8 @@ import UIKit
 import SnapKit
 
 class ViewController: UIViewController {
-    static var result: String = "0"
-    let arragne: [[String]] = [ ["7", "8", "9", "+"],
+    var result: String = "0"
+    let arrange : [[String]] = [ ["7", "8", "9", "+"],
                                 ["4", "5", "6", "-"],
                                 ["1", "2", "3", "*"],
                                 ["AC", "0", "=", "/"] ]
@@ -12,7 +12,7 @@ class ViewController: UIViewController {
     let defaultColor = CGColor(red: 77/255, green: 77/255, blue: 77/255, alpha: 1.0)
     
     // Label 생성
-    static var label: UILabel = {
+    lazy var label: UILabel = {
         let label = UILabel()
         label.text = result
         label.textColor = .white
@@ -37,7 +37,7 @@ class ViewController: UIViewController {
         
         // MARK: - Button
         // 버튼 생성
-        let buttons: [[UIButton]] = arragne.map{$0.map{makeButton(titleValue: String($0))}}
+        let buttons: [[UIButton]] = arrange.map{$0.map{makeButton(titleValue: String($0))}}
         
         // 버튼을 만드는 메서드
         func makeButton(titleValue: String) -> UIButton {
@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         
         // MARK: - HorizontalStackView
         // 각 라인의 버튼을 하나의 스택뷰로 선언
-        let stakViews: [UIStackView] = buttons.map { makeHorizontalStackView($0) }
+        let stackViews: [UIStackView] = buttons.map { makeHorizontalStackView($0) }
         
         // HorizontalStackView 생성하는 메서드
         func makeHorizontalStackView(_ views: [UIView]) -> UIStackView {
@@ -71,7 +71,7 @@ class ViewController: UIViewController {
         
         // MARK: - VerticalStackView
         // 하나의 VerticalStackView 생성
-        let verticalStackView = makeVerticalStackView(stakViews)
+        let verticalStackView = makeVerticalStackView(stackViews)
         
         // VerticalStackView 생성하는 메서드
         func makeVerticalStackView(_ views: [UIView]) -> UIStackView {
@@ -84,12 +84,12 @@ class ViewController: UIViewController {
         }
         
         // View에 모든 요소들 추가
-        [ViewController.label, verticalStackView]
+        [label, verticalStackView]
             .forEach { view.addSubview($0) }
         
         //MARK: - Layout
         // label 레이아웃 설정
-        ViewController.label.snp.makeConstraints {
+        label.snp.makeConstraints {
             $0.height.equalTo(100)
             $0.leading.equalToSuperview().offset(30)
             $0.trailing.equalToSuperview().offset(-30)
@@ -97,7 +97,7 @@ class ViewController: UIViewController {
         }
         
         // 각 라인의 HorizontalStackView의 레이아웃 설정
-        [stakViews].forEach(horizontalStackViewLayout(stackView:))
+        [stackViews].forEach(horizontalStackViewLayout(stackView:))
         
         // 각 라인의 Layout 설정 메서드
         func horizontalStackViewLayout(stackView: [UIStackView]) {
@@ -111,7 +111,7 @@ class ViewController: UIViewController {
         // verticalStackView의 Layout 설정
         verticalStackView.snp.makeConstraints {
             $0.width.equalTo(350)
-            $0.top.equalTo(ViewController.label.snp.bottom).offset(60)
+            $0.top.equalTo(label.snp.bottom).offset(60)
             $0.centerX.equalToSuperview()
         }
     }
@@ -124,7 +124,7 @@ extension ViewController {
         guard let title = sender.currentTitle else { return }
         
         // 중복된 연산자 입력 방지
-        if let lastValue = ViewController.result.last,
+        if let lastValue = result.last,
            operators.contains(String(lastValue)) && operators.contains(title) { return }
         
         // switch문을 이용한 버튼 기능구현
@@ -133,34 +133,37 @@ extension ViewController {
             let calculateResult = resetResult()
             changeLabelValue(calculateResult)
         case "=" :
-            let calculateResult = String(calculate(expression: ViewController.result) ?? 0)
+            if let lastValue = result.last, operators.contains(String(lastValue)) {
+                result.removeLast()
+            }
+            let calculateResult = String(calculate(expression: result) ?? 0)
             changeLabelValue(calculateResult)
             resetResult()   // 계산 후 result값 초기화
         default :
-            if ViewController.result.first == "0" {
-                ViewController.result = ""
+            if result.first == "0" {
+                result = ""
             }
             appendValue(title)
-            changeLabelValue(ViewController.result)
+            changeLabelValue(result)
         }
     }
     
     // 리셋버튼 적용
     func resetResult() -> String {
-        ViewController.result = "0"
-        return ViewController.result
+        result = "0"
+        return result
     }
     
     // 입력 받은 숫자를 추가
     func appendValue(_ value: String) {
-        ViewController.result.append(value)
+        result.append(value)
     }
     
     // label의 값을 변경 (UI 업데이트)
     func changeLabelValue(_ value: String?) {
         guard let value = value else {return}
         DispatchQueue.main.async {
-            ViewController.label.text = String(value)
+            self.label.text = String(value)
         }
     }
     
